@@ -1,35 +1,26 @@
-
-class LinkedList{
-    class Node<T>{
-        Node<T> next, back;
-        T data;
-        public Node(T data){
-            this.data = data;
-            this.next = this.back = null;
-        }
-        public Node<T> getNext(){return this.next;}
-        public Node<T> getBack(){return this.back;}
-    }
-    Node<Character> head;
-    Node<Character> tail;
-    public LinkedList(){
-        
-    }
-}
 public class HashMap {
-    private int size;
-    // private St
-    
+    TrieNode[] arr;
+    int size;
+    int count;
     public HashMap(){
-        size = 100;
-    }
-    public HashMap(int size){
-        this.size = size;
+        size = 30;
+        arr = new TrieNode[size];
     }
     public int HashFunc(Character c){
         return c.hashCode() < 0 ? (c.hashCode() * -1) % size : c.hashCode()%size;
     }
     public void add(Character c, TrieNode T){
+        int index = HashFunc(c);
+        TrieNode spot = arr[index];
+        if(spot == null){
+            arr[index] = T;     
+        } 
+        count++;
+    }
 
+    public TrieNode get(Character c){
+        int index = HashFunc(c);
+        TrieNode spot = arr[index];
+        return spot;
     }
 }

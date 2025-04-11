@@ -1,10 +1,11 @@
 public class TrieNode {
     HashMap children;
-    String content;
-    String definition;
+    Character c;
     boolean isEnd;
+    int appearance;
     public TrieNode(){
         children = new HashMap();
         isEnd = false;
+        appearance = 0;
     }
 }
