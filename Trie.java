@@ -1,16 +1,37 @@
+import java.util.ArrayList;
 public class Trie {
-    private final TrieNode root;
+    class TrieCompresssed extends Trie{
+        private final TrieNode<String> root;
+        private final String END = "$";
+        public TrieCompresssed(){
+            this.root = new TrieNode<>();
+        }
+        public void insert(String s){
+            TrieNode<String> n = root;
+            TrieNode<String> spot = n.children.get(s);
+            if(spot == null){
+                TrieNode<String> tmp = new TrieNode();
+                spot = tmp;
+                n.children.add(s,tmp);
+                tmp.c = s;
+            }
+            n.appearance++;
+            spot.children.add(String.valueOf(END), new TrieNode<String>());
+            // return spot;
+        }
+    }
+    private final TrieNode<Character> root;
     final private Character END = '$';
     public Trie(){
-        root = new TrieNode();
+        root = new TrieNode<Character>();
     }
 
     public void insert(String s){
-        TrieNode n = root;
+        TrieNode<Character> n = root;
         for(char c: s.toCharArray()){
-            TrieNode spot = n.children.get(c);
+            TrieNode<Character> spot = n.children.get(c);
             if(spot == null){
-                TrieNode tmp = new TrieNode();
+                TrieNode<Character> tmp = new TrieNode();
                 spot = tmp;
                 n.children.add(c,tmp);
                 tmp.c = c;
@@ -19,13 +40,13 @@ public class Trie {
             n = spot;
         }
         n.appearance++;
-        TrieNode end = new TrieNode();
+        TrieNode<Character> end = new TrieNode();
         end.c = END;
         n.children.add(END, end);
     }
 
     public boolean search(String s){
-        TrieNode n = root;
+        TrieNode<Character> n = root;
         for(char c: s.toCharArray()){
             n = n.children.get(c);
             if(n == null){return false;}
@@ -35,7 +56,7 @@ public class Trie {
     }
 
     public boolean startsWith(String pre){
-        TrieNode n = root;
+        TrieNode<Character> n = root;
         for(char c: pre.toCharArray()){
             n = n.children.get(c);
             if(n == null) return false;
@@ -43,8 +64,8 @@ public class Trie {
         return true;
     }
 
-    public int startsWithCount(String pre){
-        TrieNode n = root;
+    public int prefixCount(String pre){
+        TrieNode<Character> n = root;
         for(char c: pre.toCharArray()){
             n = n.children.get(c);
             if(n == null) return -1;
@@ -55,23 +76,76 @@ public class Trie {
         return deleteHelper(root, s , 0);
     }
 
-    private boolean deleteHelper(TrieNode n, String s, int index){
+    private boolean deleteHelper(TrieNode<Character> n, String s, int index){
         if(index == s.length()){
             if(n.children.get(END) == null) {return false;}
+            n.children.remove(END);
             return n.children.count == 0;
+        }
+
+        char c = s.charAt(index);
+        TrieNode<Character> child =  n.children.get(c);
+        if(child == null){return false;}
+
+        boolean shouldDelete = deleteHelper(child, s, index+1);
+        if(shouldDelete){
+            n.children.remove(c);
+            return ((n.children.count == 0) && (n.children.get(END) == null));
         }
         return false;
     }
+
+    public TrieCompresssed compress(){
+        ArrayList<Character> keys = root.children.getKeys();
+        TrieCompresssed newTree = new TrieCompresssed();
+        for(char c: keys){
+            String s = String.valueOf(c);
+            TrieNode<Character> child =  root.children.get(c);
+            compressHelper(child, newTree.root, s);
+            // System.out.println(c);
+        }
+
+        return newTree;
+    }
+    public void compressHelper(TrieNode<Character> n, TrieNode<String> acc, String s){
+        TrieNode<String> tNode;
+        // This is is suppossed to recursively go through the chars of an entry
+        // Once the entry finds an "end" it gets added to the compressed tree
+        // A new trieNode is created in case there are more words that follow after (i.e. cat and catapult will catch 
+        // -apult under)
+        if(n.children.get(END) != null){
+            tNode = new TrieNode<>();            
+            tNode.c = s;
+            acc.children.add(s, tNode);
+            n.children.remove(END);
+            TrieNode<String> End = new TrieNode<>();
+            End.c = "$";
+            tNode.children.add(String.valueOf(END), End);
+            s = "";
+            acc = tNode;
+        }
+        ArrayList<Character> kids = n.children.getKeys();
+        for(char c:kids){
+            TrieNode<Character> child = n.children.get(c);
+            if (c != '$'){
+                String tmp = s + String.valueOf(c);
+                compressHelper(child,acc,tmp);
+            } 
+            
+        }
+    }
+    public String getSeqeuence(String word){
+        return "TODO";
+    }
     public static void main(String[] args) {
         Trie t = new Trie();
-        t.insert("Carlos");
-        t.insert("Car");
-        t.insert("Cart");
-
-        System.out.println(t.search("Carlos"));
-        System.out.println(t.search("Carl"));
-        System.out.println(t.search("Duhhh"));
-        System.out.println(t.search("D"));
-        System.out.println(t.search("C"));
+        t.insert("cat");
+        t.insert("category");
+        t.insert("catapult");
+        t.insert("categorize");
+        System.out.println(t.prefixCount("cata"));
+        System.out.println(t.prefixCount("cat"));
     }
 }
+
+
