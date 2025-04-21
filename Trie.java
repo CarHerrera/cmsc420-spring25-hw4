@@ -1,8 +1,8 @@
 import java.util.ArrayList;
 public class Trie {
     class TrieCompresssed extends Trie{
-        private final TrieNode<String> root;
-        private final String END = "$";
+        public final TrieNode<String> root;
+        public final String END = "$";
         public TrieCompresssed(){
             this.root = new TrieNode<>();
         }
@@ -18,6 +18,10 @@ public class Trie {
             n.appearance++;
             spot.children.add(String.valueOf(END), new TrieNode<String>());
             // return spot;
+        }
+
+        public TrieNode<String> contains(TrieNode<String> n, String s){            
+            return n.children.get(s);
         }
     }
     private final TrieNode<Character> root;
@@ -72,6 +76,24 @@ public class Trie {
         }
         return n.appearance;
     }
+    public String getSequence(String word){
+        TrieNode<Character> n = root;
+        StringBuilder sb = new StringBuilder();
+        StringBuilder copy = new StringBuilder();
+        for(char c: word.toCharArray()){
+            n = n.children.get(c);
+            if(n == null) return null;
+            sb.append(c);
+            copy.append(c);
+            if(copy.toString().equals(word)){
+                return sb.toString();
+            }
+            if(n.children.count > 1 ){
+                sb.append("-");
+            }
+        }
+        return sb.toString();
+    }
     public boolean delete(String s){
         return deleteHelper(root, s , 0);
     }
@@ -80,16 +102,16 @@ public class Trie {
         if(index == s.length()){
             if(n.children.get(END) == null) {return false;}
             n.children.remove(END);
+            n.appearance--;
             return n.children.count == 0;
         }
-
+        n.appearance--;
         char c = s.charAt(index);
         TrieNode<Character> child =  n.children.get(c);
         if(child == null){return false;}
-
         boolean shouldDelete = deleteHelper(child, s, index+1);
         if(shouldDelete){
-            n.children.remove(c);
+            n.children.remove(c);   
             return ((n.children.count == 0) && (n.children.get(END) == null));
         }
         return false;
@@ -134,16 +156,13 @@ public class Trie {
             
         }
     }
-    public String getSeqeuence(String word){
-        return "TODO";
-    }
     public static void main(String[] args) {
         Trie t = new Trie();
-        t.insert("cat");
-        t.insert("category");
+        t.insert("apple");
+        t.insert("apricot");
         t.insert("catapult");
-        t.insert("categorize");
-        System.out.println(t.prefixCount("cata"));
+        t.insert("avocado");
+        System.out.println(t.prefixCount("a"));
         System.out.println(t.prefixCount("cat"));
     }
 }

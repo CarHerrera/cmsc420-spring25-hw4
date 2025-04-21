@@ -2,15 +2,16 @@
  * Dictionary class that stores words and associates them with their definitions
  */
 public class Dictionary {
-    private HashMap<String,String> defPair;
+    private CuckooHash<String,String> defPair;
     private Trie tree;
+    private boolean compress = false;
 
     /**
      * Constructor to initialize the Dictionary
      */
     public Dictionary() {
         tree = new Trie();
-        defPair = new HashMap<>(1000);
+        defPair = new CuckooHash<>(121039);
     }
 
     /**
@@ -23,14 +24,18 @@ public class Dictionary {
      */
     public void add(String word, String definition) {
         // This means that the word was not found in the dictionary
-        ObjPair<String,String> item = defPair.getRaw(word);
-        if(item== null){  
-            defPair.add(word, definition);
-            tree.insert(word);
-        } else {
-            // Meaning that the word has been found already
-            item.value = definition;
+        
+        if (!compress){
+            Entry<String, String> item = defPair.getRaw(word);
+            if(item== null){  
+                defPair.put(word, definition);
+                tree.insert(word);
+            } else {
+                // Meaning that the word has been found already
+                item.value = definition;
+            }
         }
+        
     }
 
     /**
@@ -40,10 +45,12 @@ public class Dictionary {
      */
     public void remove(String word) {
         // TODO
-        String item = defPair.get(word);
-        if(item == null){return;}
-        defPair.remove(word);
-        tree.delete(word);
+        if (!compress){
+            if(defPair.containsKey(word)){
+                defPair.remove(word);
+                tree.delete(word);
+            }
+        }
     }
 
     /**
@@ -67,7 +74,15 @@ public class Dictionary {
      * @return The sequence representation, or null if word not found
      */
     public String getSequence(String word) {
+        // TODO
+        if (word.equals("sentimentality")){
+            int i = 1;
+        }
+        if(defPair.containsKey(word)){
+            return tree.getSequence(word);
+        }
         return null;
+        
     }
 
     /**
@@ -77,7 +92,8 @@ public class Dictionary {
      * @return The number of words that start with the prefix
      */
     public int countPrefix(String prefix) {
-        return tree.prefixCount(prefix);
+        int val = tree.prefixCount(prefix);
+        return  val == -1 ? 0 : val;
     }
 
     /**
@@ -85,7 +101,6 @@ public class Dictionary {
      * This operation should not change the behavior of any other methods
      */
     public void compress() {
-        Trie t = tree.compress();
-        this.tree = t;
+        compress = true;
     }
 }

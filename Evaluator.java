@@ -1,7 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Scanner;
 import java.util.Arrays;
+import java.util.Scanner;
 
 class OperationType {
     public static final int ADD = 1;
